@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+
+# 本地便携版 Python（工作区内，不入库）
+.python/
+
+# Environment
+.env
+*.local
+
+# Data
+data/papers/*
+data/chroma/*
+data/*.db
+data/*.db-journal
+!data/papers/.gitkeep
+!data/chroma/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# PyVis 运行时生成的静态资源
+backend/lib/
+
+# Streamlit
+.streamlit/secrets.toml

@@ -1,0 +1,30 @@
+# ===== 核心依赖（轻量，不含 PyTorch）=====
+# 这份装完就能跑全部功能：解析 / 速读 / 问答 / 对比 / 图谱 / 笔记
+# 向量检索会使用 ChromaDB 内置 embedding（无需额外下载模型）
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# 数据库
+sqlalchemy==2.0.35
+
+# PDF 解析
+PyMuPDF==1.24.10
+
+# LLM（OpenAI 兼容协议）
+openai==1.51.2
+
+# 向量数据库（自带 onnxruntime + 内置 embedding）
+chromadb==0.5.13
+
+# 图谱
+networkx==3.3
+pyvis==0.3.2
+
+# 工具
+python-multipart==0.0.12
+python-dotenv==1.0.1
+tqdm==4.66.5
+numpy<2.0
