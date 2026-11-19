@@ -190,8 +190,7 @@ def make_bibtex(meta: dict) -> str:
     else:
         authors = "Unknown"
 
-    tag_title = re.sub(r"[^a-zA-Z0-9]", "", title.lower())[:8]
-    tag = f"{tag_title}{year}"
+    tag = _cite_key(authors, year, title)
 
     return (
         "@article{" + tag + ",\n"
@@ -201,6 +200,17 @@ def make_bibtex(meta: dict) -> str:
         "  journal   = {Preprint or Unknown},\n"
         "}\n"
     )
+
+
+def _cite_key(authors: str, year: str, title: str) -> str:
+    """生成形如 zhang2024scirag 的引用键。"""
+    first = authors.split(" and ")[0].split(",")[0].strip()
+    surname = re.sub(r"[^A-Za-z]", "", first.split()[-1]).lower() if first else ""
+    y = re.sub(r"\D", "", year) or "nd"
+    stop = {"a", "an", "the", "on", "of", "for", "with", "and", "to", "in", "via", "towards"}
+    words = [w for w in re.findall(r"[A-Za-z]+", title) if w.lower() not in stop]
+    head = (words[0].lower() if words else "paper")[:12]
+    return f"{surname or 'anon'}{y}{head}"
 
 
 # ---------- Related Work ----------

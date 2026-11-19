@@ -76,7 +76,8 @@ def embed(texts: List[str]) -> np.ndarray:
     try:
         vecs = np.asarray(_get_onnx_ef()(texts), dtype=np.float32)
     except Exception as e:
-        raise RuntimeError(f"Embedding 不可用：{_error_msg or e}") from e
+        detail = f"{e}；降级原因：{_error_msg}" if _error_msg else str(e)
+        raise RuntimeError(f"Embedding 不可用：{detail}") from e
 
     norms = np.linalg.norm(vecs, axis=1, keepdims=True)
     return vecs / np.clip(norms, 1e-9, None)
