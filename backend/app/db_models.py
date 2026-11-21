@@ -35,3 +35,14 @@ class Note(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     paper = relationship("Paper", back_populates="notes")
+
+
+class CompareScore(Base):
+    """第 3 步「用户推演 ↔ 作者路径」的近似对照分数（本地成长曲线用）。"""
+    __tablename__ = "compare_scores"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    paper_id = Column(String(64), index=True)
+    session_id = Column(String(64), index=True)
+    score = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

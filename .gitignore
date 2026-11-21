@@ -18,8 +18,11 @@ env/
 # Data
 data/papers/*
 data/chroma/*
+data/research/
+data/overview/
 data/*.db
 data/*.db-journal
+data/*.json
 !data/papers/.gitkeep
 !data/chroma/.gitkeep
 

@@ -38,17 +38,32 @@ class AnswerResult(BaseModel):
     sources: List[dict] = Field(default_factory=list)
 
 
-# ---------- 多论文对比 ----------
+# ---------- 多论文思路对比 ----------
 class CompareRequest(BaseModel):
     paper_ids: List[str]
-    focus: Optional[str] = None  # 可选：对比侧重点（如"方法"、"数据集"）
+
+
+class ThinkingAxis(BaseModel):
+    key: str
+    label: str
+    phase: str = ""
+    hint: str = ""
+
+
+class ThinkingPaper(BaseModel):
+    paper_id: str
+    title: str
+    year: str = ""
+    pattern: str = ""
+    cells: List[str] = Field(default_factory=list)
+    alternatives: List[Dict[str, Any]] = Field(default_factory=list)
+    path: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class CompareResult(BaseModel):
-    headers: List[str] = Field(..., description="对比维度列表")
-    rows: List[Dict[str, str]] = Field(..., description="每行一篇论文，key=维度")
-    consensus: str = Field("", description="共识点")
-    divergence: str = Field("", description="分歧点")
+    axes: List[ThinkingAxis] = Field(default_factory=list)
+    papers: List[ThinkingPaper] = Field(default_factory=list)
+    summary: str = ""
 
 
 # ---------- 文献图谱 ----------
@@ -57,6 +72,8 @@ class GraphNode(BaseModel):
     label: str
     title: str = ""
     size: int = 10
+    meta: str = ""
+    color: str = "#2F5D46"
 
 
 class GraphEdge(BaseModel):
@@ -64,6 +81,8 @@ class GraphEdge(BaseModel):
     target: str
     weight: float
     label: str = ""
+    shared_terms: List[str] = Field(default_factory=list)
+    why: str = ""
 
 
 class GraphResult(BaseModel):
@@ -88,3 +107,23 @@ class NoteResult(BaseModel):
 class NotesOrganizeResult(BaseModel):
     organized: str = Field(..., description="AI 整理后的结构化笔记")
     structure: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+# ---------- 12 步研究工作流 ----------
+class ReasoningBeat(BaseModel):
+    move: str = ""
+    known: str = ""
+    question: str = ""
+    leap: str = ""
+    temptation: str = ""
+
+
+class ResearchStage(BaseModel):
+    """单个阶段的原始输出（字段按阶段不同而不同）。"""
+    data: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ResearchCompareResult(BaseModel):
+    aligned: str = ""
+    gap: str = ""
+    lesson: str = ""

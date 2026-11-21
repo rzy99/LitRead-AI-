@@ -52,13 +52,14 @@ def _extract_title(doc: fitz.Document, first_page_text: str) -> Optional[str]:
 
 
 def _extract_abstract(text: str) -> Optional[str]:
+    # IEEE 模板常写成 "Abstract—正文"，先把破折号统一成普通连字符
+    head = text[:8000].replace("\u2014", "-").replace("\u2013", "-")
     patterns = [
-        r"(?:^|\n)\s*Abstract\s*[\.:\-]?\s*\n(.+?)(?=\n\s*(?:1\.?\s+Introduction|I\.?\s+Introduction|Keywords|Index Terms)\b)",
-        r"(?:^|\n)\s*Abstract\s*[\.:\-]?\s*\n(.+?)(?=\n\s*\d+\.?\s+[A-Z])",
-        r"(?:^|\n)\s*Abstract\s*[\.:\-]?\s*(.+?)(?=\n\s*Keywords)",
-        r"(?:^|\n)\s*摘\s*要\s*[\.:\-]?\s*\n?(.+?)(?=\n\s*(?:关键词|Key words|1\.|一、))",
+        r"(?:^|\n)\s*Abstract\s*[-:\.]?\s*(.+?)(?=\n\s*(?:Index Terms|Keywords|Key words|I\.?\s+Introduction|1\.?\s+Introduction|1\s+Introduction)\b)",
+        r"(?:^|\n)\s*Abstract\s*[-:\.]?\s*(.+?)(?=\n\s*\d+\.?\s+[A-Z])",
+        r"(?:^|\n)\s*Abstract\s*[-:\.]?\s*(.+?)(?=\n\s*(?:Keywords|Index Terms))",
+        r"(?:^|\n)\s*摘\s*要\s*[-:\.]?\s*(.+?)(?=\n\s*(?:关键词|Key words|1\.|一、))",
     ]
-    head = text[:8000]
     for pat in patterns:
         m = re.search(pat, head, re.IGNORECASE | re.DOTALL)
         if m:

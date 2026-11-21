@@ -1,163 +1,242 @@
-# 📚 LitRead AI
+# LitRead · AI 研究思维训练
 
-> 面向学习与科研的 AI 文献阅读与整理工具 —— 把「上传 · 速读 · 问答 · 对比 · 图谱 · 笔记 · 写作」串成一条完整链路。
+> 不是替你读论文，而是训练你像作者一样想。
 
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+**12 步研究流 · 作者路径逆向 · 先写后揭晓 · 红队/反例 · 思路对比 · 成长曲线**
+
+[在线体验](https://litread.yogdunana.cn) · [竞品与相关工作](docs/competitive-landscape.md) · [部署说明](DEPLOY.md) · [3 分钟演示脚本](LitRead-Viz-Demo-Script.md)
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.38-FF4B4B?logo=streamlit&logoColor=white)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-0.5-FF6B6B)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
 ## 一、项目简介
 
-科研人员读一篇论文平均要 30–60 分钟，读完还容易忘；跨论文对比、整理综述、写 Related Work 更是重复劳动。
+科研训练里最缺的往往不是「再读一篇」，而是「自己推演一次」。
 
-**LitRead AI** 把文献处理拆成 8 个可独立使用、也能串起来的模块，上传 PDF 后即可完成从「读懂单篇」到「串起多篇」的全过程。
+我们习惯了看别人总结好的方法、结论和局限，于是读完一篇论文，很容易产生一种错觉：这个方法本来就该这么想。但真正的研究能力，发生在**方法出现之前**——面对同样的背景和限制，你能提出什么假设？你会走哪条路？你会放弃什么？
 
-### 核心亮点
+**LitRead 是一个 12 步研究思维训练工作台。** 它把一篇论文拆成 6 个阶段、12 个研究动作：先建立背景，再只凭方法出现前的知识推演作者路径；然后拆解方法、审视证据、做红队攻击、设计反例，最后提出自己的 follow-up。
 
-- **Demo 模式可降级**：没有 LLM API Key 时自动切换到本地模板/检索模式，全链路依然可演示，现场不怕断网
-- **不绑定模型供应商**：统一走 OpenAI 兼容协议，DeepSeek / 中转站 / 官方 API 只改 3 个环境变量
-- **零外部服务依赖**：向量库、数据库、图谱全部本地化，单机即可跑通
-- **中英文兼容**：PDF 解析、分块、追问均支持中英文混合文献
+它不替用户读论文，也不替用户写论文。它把原本不可见的思考过程画出来，让用户先写、再对照、再改进。
 
----
+> 一句话：**其他工具帮你更快地读，LitRead 帮你更像一个研究者那样想。**
 
-## 二、功能一览
+### 适合谁
 
-| # | 模块 | 说明 | 是否依赖 LLM |
-|---|------|------|:---:|
-| 1 | 📄 **论文解析** | 上传 PDF，按字号启发式识别标题，抽取作者/摘要/关键词/章节结构 | ❌ |
-| 2 | ⚡ **速读卡片** | 一键生成 TL;DR + 核心贡献 / 方法亮点 / 主要结论 / 局限性 | ✅ 可降级 |
-| 3 | 💬 **文献问答** | 基于向量检索的 RAG 问答，回答带来源标注（论文 ID + 块序号 + 相关度） | ✅ 可降级 |
-| 4 | ⚖️ **多论文对比** | 2+ 篇论文并排对比表，自动归纳共识点与分歧点，支持导出 Markdown | ✅ 可降级 |
-| 5 | 🕸️ **知识图谱** | 基于语义相似度构建论文关系网络，pyvis 可拖拽交互 | ❌ |
-| 6 | 📝 **阅读笔记** | 摘录批注 → AI 按「研究问题 / 方法 / 实验 / 结论」结构化整理 | ✅ 可降级 |
-| 7 | ✍️ **Related Work** | 输入研究主题，基于库中论文生成综述段落草稿 | ✅ 可降级 |
-| 8 | 📑 **BibTeX** | 从元数据生成标准 BibTeX，支持批量导出 `references.bib` | ❌ |
+- 想从「读论文」过渡到「做研究」的本科生、研究生
+- 准备组会、开题、审稿，需要快速建立判断的人
+- 想训练学生研究思维的高校老师、实验室
+- 对某个方向感兴趣，但不想只停留在「看懂摘要」的人
 
-> 「可降级」= LLM 不可用时自动回退到基于摘要/关键词/检索结果的真实内容，不会报错也不会编造数据。
+### 不适合谁
+
+- 只想快速摘要、翻译、PDF 问答：ChatPDF、Scholarcy 更合适
+- 想做大规模系统性综述：Elicit、SciSpace 更合适
+- 想自动生成论文/自动做实验：AI Scientist、Agent Laboratory 更合适
+- 想要「一键出结果」：LitRead 会刻意保留认知摩擦
 
 ---
 
-## 三、技术栈
+## 二、五个页面
 
-### 后端
+导航顺序固定为：**研究流 → 概述图 → 对比 → 笔记 → 论文库**。
 
-| 分类 | 技术 | 版本 | 用途 |
-|------|------|------|------|
-| Web 框架 | **FastAPI** | 0.115.0 | REST API、自动 OpenAPI 文档 |
-| ASGI 服务器 | **Uvicorn** | 0.30.6 | 生产级异步服务 |
-| 数据校验 | **Pydantic v2** + pydantic-settings | 2.9.2 / 2.5.2 | 请求响应模型、配置管理 |
-| ORM | **SQLAlchemy** | 2.0.35 | 论文/笔记持久化 |
-| 数据库 | **SQLite** | 内置 | 零运维单文件存储 |
-| PDF 解析 | **PyMuPDF (fitz)** | 1.24.10 | 文本抽取、字号/坐标分析 |
-| LLM SDK | **OpenAI Python SDK** | 1.51.2 | OpenAI 兼容协议统一调用 |
-| 向量数据库 | **ChromaDB** | 0.5.13 | 持久化向量检索 |
-| Embedding | **ONNX MiniLM-L6-v2**（内置）/ BGE-small-zh（可选） | — | 免 PyTorch 的中英文向量化 |
-| 图计算 | **NetworkX** | 3.3 | 相似度建边、连通分量 |
-| 图可视化 | **PyVis** | 0.3.2 | 生成可交互 HTML 图谱 |
-| 数值计算 | **NumPy** | <2.0 | 余弦相似度、矩阵运算 |
-
-### 前端
-
-| 分类 | 技术 | 版本 | 用途 |
-|------|------|------|------|
-| 应用框架 | **Streamlit** | 1.38.0 | 8 Tab 单页应用、内嵌图谱 HTML |
-| HTTP 客户端 | **Requests** | 2.32.3 | 调用后端 REST API |
-
-### 部署
-
-| 方式 | 说明 |
-|------|------|
-| 本地 | 一键 `start.bat`（Windows）/ `start.sh` |
-| 容器 | 前后端各自 `Dockerfile`，数据目录挂载卷 |
-| 公网 | Streamlit Community Cloud + Render（免费组合），详见 [DEPLOY.md](./DEPLOY.md) |
+| 页面 | 你在这里做什么 | 核心产出 |
+|---|---|---|
+| **研究流** | 按 6 阶段、12 步读一篇论文；第 3 步先写作者路径，再揭晓对照 | 一篇论文的完整研究拆解 + 4 张思维可视化 |
+| **概述图** | 把论文压成一张竖版网页笔记 | 一句话总结、研究问题、方法直觉、关键结果、局限、takeaway；可下载 PNG |
+| **对比** | 把 2 篇以上论文的「思路」并排，而不是比摘要相似度 | 8 个思维阶段并排、思维模式标签、没走的路、完整作者路径 |
+| **笔记** | 写自己的想法、疑问或反思；留空时自动写入研究流 12 步 | 可展开/删除的笔记列表；可下载 PDF |
+| **论文库** | 上传 PDF、解析元数据、管理文献架 | 标题、作者、年份、摘要、章节结构；可删除论文 |
 
 ---
 
-## 四、系统架构
+## 三、12 步研究流
 
+| 阶段 | 步 | 研究动作 | 用户要做什么 |
+|---|---:|---|---|
+| 一 · 背景与前史 | 1 | 研究问题：它为什么值得做 | 读背景，判断问题价值 |
+|  | 2 | 前史：前人为什么不够 | 看时间线，找真正的缺口 |
+| 二 · 作者路径（核心） | 3 | 作者最可能的思考路径 | **先写自己的推演，再揭晓 AI 的重建** |
+| 三 · 方法与数学 | 4 | Intuition：核心 idea 的本质 | 用自己的话解释，而不是复述 |
+|  | 5 | 具体方法：一个真实样本的 pipeline | 跟一遍数据流，找到关键设计 |
+|  | 6 | 数学推导：从零开始 | 补预备概念，逐行推导 |
+| 四 · 实验证据 | 7 | 问题 → 实验 → 答案 | 看每个实验到底回答了哪个问题 |
+|  | 8 | Take-aways | 提炼可复用的结论 |
+| 五 · 红队审稿 | 9 | 最脆弱的假设 | 找最可能被攻击的假设 |
+|  | 10 | 一周最小复现 | 设计最小验证，而不是复现整篇 |
+|  | 11 | 如果我反对它：反例设计 | 设计一个能推翻它的反例 |
+| 六 · 我的 idea | 12 | Follow-up idea：从缺陷到新问题 | **先写自己的 idea，再对照 AI 的方向** |
+
+### 第 3 步为什么是核心
+
+第 3 步只给「方法出现前」的知识：当时的背景、已知工作、限制和矛盾。用户先写自己认为作者会怎么想，提交后才看到 AI 重建的作者路径。
+
+这一步刻意制造信息隔离：
+
+- 不提前给方法、实验结果和结论
+- 用户必须先产出自己的路径
+- 提交后才出现「你的路径」与「作者路径」的对照
+- 对照是确定性文字重合计算，不调用 LLM，也不把「接近度」包装成质量评分
+
+---
+
+## 四、六个可视化
+
+所有图都遵循同一套颜色语义：
+
+- **墨绿**：论文事实
+- **浅绿**：推断
+- **灰色**：背景/备选路线
+- **暖金**：用户路径
+- **红色**：被攻击/风险
+
+| 可视化 | 位置 | 它回答什么 |
+|---|---|---|
+| **可信度光谱** | 研究流页顶 | 12 步里，哪些是论文事实、外部知识、推断、混合？每步占比多少？ |
+| **前史时间线** | 阶段一 | 这个想法出现前，世界已经知道了什么？哪些年份有明确节点？ |
+| **思维分叉图** | 阶段二（第 3 步） | 作者从哪个世界出发、在哪一步跳跃、有哪些备选路线、你的路径在哪分叉？ |
+| **论证结构图** | 阶段五顶部 | 主张靠哪些实验支撑？哪些主张被红队攻击、连线断在哪？ |
+| **成长曲线** | 侧栏 | 已训练几篇？平均接近度多少？最近几次推演是进步还是波动？ |
+| **思路对比** | 对比页 | 多篇论文的起点、转折、关键跳跃、设计取舍、最脆弱假设、没走的路有什么不同？ |
+
+**思路对比的 8 个阶段**：起点 → 转折 → 关键跳跃 → 设计取舍 → 证据策略 → 最脆弱假设 → 没走的路 → 留下的问题。
+
+### 思维分叉图怎么读
+
+- 左侧：**方法出现前的世界**——作者当时知道什么、被什么卡住
+- 中间：**作者路径**——墨绿主路径，每一步包含已知、疑问、跳跃、诱惑
+- 右侧：**论文设计**——想法最终落成了什么方法（没有 design mapping 时省略）
+- 红色小三角：**诱惑**——最容易走错的那一步
+- 灰色虚线：**备选路线**——作者没走的路，以及为什么放弃
+- 暖金路径：**你的推演**——只在提交后出现；hit 实心环、partial 半环、miss 空心
+- 分叉点：你的路径第一次偏离作者路径的位置；如果你更像某条备选路线，会在对应分支处亮起
+
+---
+
+## 五、和现有工具的区别
+
+现有 AI 科研工具大致分四类：
+
+| 类型 | 代表 | 它们给你 | LitRead 给你 |
+|---|---|---|---|
+| 答案引擎 | Elicit、Consensus、SciSpace、PaperQA2、ChatPaper | 答案、摘要、综述、提取表 | 先推演、再对照的训练 |
+| 文献关系图 | Connected Papers、Litmaps、ResearchRabbit | 谁和谁相关/相似 | 谁的思路、起点、跳跃、取舍不同 |
+| 研究自动化 Agent | AI Scientist、Agent Laboratory、STORM、GPT Researcher | 替你做检索、综述、实验、写作 | 训练你自己做研究 |
+| 阅读/审稿辅助 | Explainpaper、Scholarcy、ReadPaper、OpenReviewer | 解释难句、速读卡、自动审稿 | 作者路径 + 红队 + 反例 + follow-up |
+
+详细的项目对比、能力矩阵和答辩话术见：[docs/competitive-landscape.md](docs/competitive-landscape.md)。
+
+> 我们刻意不做：论文问答、引文图谱、Related Work 生成、BibTeX 导出。
+> 不是做不到，而是这些功能会把产品拉回「替你读/替你写」的工具，而不是「训练你想」。
+
+---
+
+## 六、核心设计原则
+
+### 1. 信息隔离
+
+第 3 步只给方法出现前的知识。用户看不到方法、实验和结论，避免「看完答案觉得理所当然」。
+
+### 2. 先写后揭晓
+
+第 3 步和第 12 步都要求用户先写自己的版本，提交后才揭晓 AI 的版本。顺序不能反。
+
+### 3. 用户路径只在提交后出现
+
+分叉图里的暖金路径、命中/半命中/未命中，只在用户提交推演后渲染。未提交时，图上没有「你的答案」。
+
+### 4. 确定性对照，不调 LLM
+
+第 3 步的路径对照、成长分数、思路对比都基于已有研究流字段做确定性计算：
+
+- 字符 bigram / 英文词 / 数字 token
+- Dice + coverage
+- 不调用 LLM，不引入随机性
+
+「接近度」是启发式指标，不是质量评分，也不是论文好坏评分。
+
+### 5. 独立缓存，互不污染
+
+- 研究流缓存：`data/research/{paper_id}.json`，版本 `rf-4`
+- 可视化缓存：`data/research/{paper_id}.viz.json`，版本 `vz-4`
+- 概述图缓存：`data/overview/{paper_id}.json` + `.png`，版本 `on-1`
+
+可视化升级不会让研究流缓存失效；研究流变化会通过指纹触发可视化重建。
+
+### 6. 原生 SVG/HTML，不引 Plotly
+
+- 静态图直接内联在页面流里，高度随内容自适应
+- 分叉图用固定高度 iframe + 响应式布局，避免内部滚动条
+- 支持键盘聚焦与 `prefers-reduced-motion`
+- 每张图都有：标题 + 一句话结论 + 可展开数据表
+
+---
+
+## 七、技术架构
+
+```text
+┌─────────────────────────────────────────────────────┐
+│ Streamlit 前端（单文件 app.py）                      │
+│ 研究流 · 概述图 · 思路对比 · 笔记 · 论文库           │
+└──────────────────────────┬──────────────────────────┘
+                           │ HTTP / JSON
+┌──────────────────────────▼──────────────────────────┐
+│ FastAPI 后端                                         │
+│ PDF 解析 · 研究流生成 · 可视化构建 · 思路对比         │
+│ 概述图 · 笔记 · 成长记录                              │
+└──────────────────────────┬──────────────────────────┘
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+      SQLite          data/research      data/papers
+   论文/笔记/成长     rf-4 / vz-4 缓存     PDF 原文
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    Streamlit 前端 (8501)                  │
-│  解析 │ 速读 │ 问答 │ 对比 │ 图谱 │ 笔记 │ RW │ BibTeX    │
-└───────────────────────────┬──────────────────────────────┘
-                            │ HTTP / JSON
-┌───────────────────────────▼──────────────────────────────┐
-│                    FastAPI 后端 (8000)                    │
-│                                                          │
-│  ┌────────────┐  ┌────────────┐  ┌──────────────────┐    │
-│  │ pdf_parser │  │ summarizer │  │   comparison     │    │
-│  │  PyMuPDF   │  │  LLM/降级  │  │     LLM/降级     │    │
-│  └────────────┘  └────────────┘  └──────────────────┘    │
-│  ┌────────────┐  ┌────────────┐  ┌──────────────────┐    │
-│  │    rag     │  │   graph    │  │ notes / bibtex   │    │
-│  │ 检索+问答  │  │ NX + PyVis │  │ SQLite + LLM     │    │
-│  └────────────┘  └────────────┘  └──────────────────┘    │
-│                                                          │
-│  ┌──────────────────┐  ┌────────────────────────────┐    │
-│  │  vector_store    │  │       llm_client           │    │
-│  │    ChromaDB      │  │  OpenAI 兼容 + is_llm_ready│    │
-│  └──────────────────┘  └────────────────────────────┘    │
-└───────────────────────────┬──────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        ▼                   ▼                   ▼
-  ┌───────────┐      ┌────────────┐      ┌────────────┐
-  │  SQLite   │      │  ChromaDB  │      │  PDF 存储  │
-  │ papers /  │      │  向量持久化 │      │  data/     │
-  │  notes    │      │            │      │  papers/   │
-  └───────────┘      └────────────┘      └────────────┘
-```
 
-### 关键设计
+| 层 | 技术 | 作用 |
+|---|---|---|
+| 前端 | Streamlit 1.38 | 5 页单文件应用、自定义 CSS、原生 SVG/HTML |
+| 后端 | FastAPI 0.115 + Uvicorn | REST API、OpenAPI 文档 |
+| 模型 | OpenAI 兼容协议 | 默认 DeepSeek；可替换任意兼容端点 |
+| PDF | PyMuPDF | 标题/作者/摘要/章节结构解析 |
+| 数据库 | SQLite + SQLAlchemy | 论文、笔记、成长记录 |
+| 缓存 | 本地 JSON | 研究流、可视化、概述图；独立版本号 |
+| 对照 | 字符 bigram + Dice/coverage | 作者路径接近度、思路对比，不调 LLM |
+| 可视化 | 原生 SVG/HTML/CSS | 光谱、时间线、分叉图、论证图、成长曲线、思路对比 |
 
-**1. LLM 可插拔 + 优雅降级**
-
-`llm_client.is_llm_ready()` 决定走哪条路径，业务代码不关心供应商：
-
-```python
-if is_llm_ready():
-    try:
-        return get_llm().chat_json(...)     # 真实模型
-    except Exception as e:
-        log.warning("LLM 失败，回退 demo：%s", e)
-return demo.demo_summary(title, abstract)  # 本地模板
-```
-
-**2. Embedding 双通道**
-
-优先 `sentence-transformers + BGE`（效果好），未安装时自动回退到 ChromaDB 内置 ONNX MiniLM（免 PyTorch、开箱即用），两条路径产出同维度归一化向量，集合不会串味。
-
-**3. 分块策略**
-
-按空行切段落 → 合并至 800 字符 → 超长段落按 120 字符重叠硬切，兼顾语义完整性与检索粒度。
-
-**4. PDF 结构化提取**
-
-基于字号分布（最大字号 = 标题）+ 坐标排序 + 正则关键词匹配（Abstract / Introduction / References）做启发式识别，不依赖 ML 模型，冷启动零延迟。
+> 仓库中仍保留早期 RAG/图谱服务与依赖，用于兼容旧数据和旧接口；当前 5 页主流程只使用 PDF 解析、研究流、可视化、思路对比、概述图和笔记。
 
 ---
 
-## 五、快速开始
+## 八、快速开始
 
 ### 环境要求
 
-- Python 3.11+
-- 无需 GPU、无需 Docker、无需外网数据库
+- Python 3.10+
+- 无需 GPU、无需 Docker、无需外部数据库
+- 可选：一个 OpenAI 兼容 API Key（不填则进入 Demo 模式）
 
-### 方式一：一键启动（Windows）
+### 方式一：一键启动
 
-```bat
-git clone <your-repo-url>
-cd litread-ai
-start.bat
+**Windows**
+
+1. 将便携版 Python 解压到项目根目录的 `.python/`（确保存在 `.python\python.exe`）
+2. 双击 `start.bat`
+3. 打开 http://localhost:8501
+
+**macOS / Linux**
+
+```bash
+chmod +x start.sh
+./start.sh
 ```
 
-打开 http://localhost:8501
+`start.sh` 会自动创建后端/前端 venv、安装依赖并启动两个服务。
 
 ### 方式二：手动启动
 
@@ -165,161 +244,192 @@ start.bat
 # 1. 后端
 cd backend
 python -m venv venv
-venv\Scripts\activate          # macOS/Linux: source venv/bin/activate
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
 
+```bash
 # 2. 前端（新终端）
 cd frontend
+python -m venv venv
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py --server.port 8501
 ```
 
-### 配置 LLM（可选）
+打开 http://localhost:8501。后端交互式 API 文档在 http://localhost:8000/docs。
 
-复制 `backend/.env.example` → `backend/.env`，填入三行即可，**不填则自动进入 Demo 模式**：
+### 配置 LLM
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+编辑 `backend/.env`：
 
 ```env
-LLM_BASE_URL=https://api.deepseek.com/v1   # 任意 OpenAI 兼容端点
+LLM_BASE_URL=https://api.deepseek.com/v1
 LLM_API_KEY=sk-xxxxxxxx
 LLM_MODEL=deepseek-chat
 ```
 
-> 已验证兼容 DeepSeek 官方 API 与标准 OpenAI 协议中转站。
+> 任意 OpenAI 兼容端点均可。不填 Key 时，在线演示的预置论文仍可完整体验；上传新论文并生成深度研究流需要配置 Key。
+
+### 在线演示
+
+- 地址：https://litread.yogdunana.cn
+- 预置 3 篇真实论文：Attention Is All You Need（2017）、Mastering the Game of Go with Self-play Experience Replay（2026）、Beyond Visual Evidence: Relational Privacy Leakage in Document MLLMs（2026）
+- 每个 IP 有 30 次 LLM 调用试用；粘贴自己的 Key 后不限量
+- Key 只在当前会话内存中使用，不写入磁盘
 
 ---
 
-## 六、配置项
+## 九、配置项
 
 | 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `LLM_BASE_URL` | `https://api.deepseek.com/v1` | LLM 端点（OpenAI 兼容） |
-| `LLM_API_KEY` | 空 | 空 → 自动 Demo 模式 |
+|---|---|---|
+| `LLM_BASE_URL` | `https://api.deepseek.com/v1` | OpenAI 兼容端点 |
+| `LLM_API_KEY` | 空 | 空 → Demo 模式 |
 | `LLM_MODEL` | `deepseek-chat` | 模型名 |
-| `EMBEDDING_MODEL` | `BAAI/bge-small-zh-v1.5` | 安装了 sentence-transformers 时生效 |
-| `EMBEDDING_DEVICE` | `cpu` | 有 GPU 可改 `cuda` |
-| `RAG_CHUNK_SIZE` | 800 | 分块字符数 |
-| `RAG_CHUNK_OVERLAP` | 120 | 分块重叠字符数 |
-| `RAG_TOP_K` | 6 | 检索返回条数 |
-| `GRAPH_SIMILARITY_THRESHOLD` | 0.55 | 图谱连边阈值（越低边越多） |
-| `SUMMARY_MAX_CHARS` | 15000 | 送入 LLM 的最大字符数 |
+| `BACKEND_HOST` | `0.0.0.0` | 后端监听地址 |
+| `BACKEND_PORT` | `8000` | 后端端口 |
+| `DATA_DIR` | `../data` | 数据根目录 |
+| `PAPERS_DIR` | `../data/papers` | PDF 存储目录 |
+| `DB_PATH` | `../data/litread.db` | SQLite 路径 |
+
+> `.env.example` 中仍保留旧版 RAG/图谱变量；当前 5 页主流程不依赖它们。
 
 ---
 
-## 七、API 一览
+## 十、API 一览
 
-后端启动后访问 **http://localhost:8000/docs** 可查看交互式文档。
+后端启动后访问 **http://localhost:8000/docs** 查看交互式文档。核心接口：
 
 | 方法 | 路径 | 说明 |
-|------|------|------|
+|---|---|---|
 | GET | `/api/health` | 健康检查 + LLM 就绪状态 |
-| GET | `/api/library/stats` | 论文数 / 向量块数 |
+| GET | `/api/rate-status` | 当前 IP 试用次数 |
+| POST | `/api/verify-key` | 验证用户自配 Key |
 | POST | `/api/papers/upload` | 上传并解析 PDF |
 | GET | `/api/papers` | 论文列表 |
-| DELETE | `/api/papers/{id}` | 删除论文（含向量与文件） |
+| DELETE | `/api/papers/{id}` | 删除论文及缓存 |
 | POST | `/api/papers/{id}/parse` | 获取完整结构化内容 |
-| POST | `/api/papers/{id}/summary` | 生成速读卡片 |
-| POST | `/api/papers/{id}/index` | 建立向量索引 |
-| POST | `/api/ask` | 文献库问答 |
-| POST | `/api/compare` | 多论文对比 |
-| POST | `/api/compare/export` | 对比表导出 Markdown |
-| GET | `/api/graph` | 生成知识图谱 |
+| GET | `/api/papers/{id}/research` | 获取研究流缓存 |
+| POST | `/api/papers/{id}/research/{stage}` | 生成指定阶段（context/author/method/evidence/critique/idea） |
+| POST | `/api/papers/{id}/research/{stage}/compare` | 对照用户推演 |
+| POST | `/api/papers/{id}/research/author/compare-structured` | 第 3 步结构化对照（分叉图/成长） |
+| GET | `/api/papers/{id}/research/viz` | 获取可视化数据（独立 `vz-4` 缓存） |
+| GET | `/api/papers/{id}/research/markdown` | 导出研究流 Markdown |
+| GET | `/api/research/growth?session_id=...` | 成长曲线数据 |
+| POST | `/api/compare` | 多论文思路对比 |
+| POST | `/api/compare/export` | 思路对比 Markdown 导出 |
+| GET | `/api/papers/{id}/overview` | 概述图结构化数据 |
+| GET | `/api/papers/{id}/overview.png` | 概述图 PNG |
 | POST | `/api/papers/{id}/notes` | 添加笔记 |
-| GET | `/api/notes` | 查询笔记 |
+| GET | `/api/notes?paper_id=...` | 查询笔记 |
 | DELETE | `/api/notes/{id}` | 删除笔记 |
-| POST | `/api/papers/{id}/notes/organize` | AI 结构化整理笔记 |
-| GET | `/api/papers/{id}/bibtex` | 单篇 BibTeX |
-| POST | `/api/bibtex/export` | 批量导出 BibTeX |
-| POST | `/api/related-work` | 生成 Related Work 草稿 |
+| GET | `/api/papers/{id}/notes/pdf` | 笔记 PDF 导出 |
 
 ---
 
-## 八、项目结构
+## 十一、项目结构
 
-```
-litread-ai/
-├── DEPLOY.md                    # 部署 + 比赛交付 + Demo 脚本
-├── start.bat / start.sh         # 一键启动
+```text
+litread/
 ├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt         # 轻量依赖（不含 PyTorch）
-│   ├── requirements-embedding.txt  # 可选：BGE 高质量向量
-│   ├── .env.example
-│   └── app/
-│       ├── main.py              # 应用入口
-│       ├── api.py               # 全部路由
-│       ├── config.py            # 配置（pydantic-settings）
-│       ├── models.py            # 请求/响应模型
-│       ├── database.py          # SQLAlchemy 引擎与会话
-│       ├── db_models.py         # Paper / Note 表
-│       └── services/
-│           ├── pdf_parser.py    # 字号启发式解析
-│           ├── embeddings.py    # BGE / ONNX 双通道
-│           ├── vector_store.py  # ChromaDB 封装
-│           ├── rag.py           # 分块 + 检索 + 问答
-│           ├── summarizer.py    # 速读卡片
-│           ├── comparison.py    # 多论文对比
-│           ├── graph.py         # 相似度图谱
-│           ├── notes.py         # 笔记管理
-│           ├── bibtex.py        # BibTeX 生成
-│           ├── related_work.py  # 综述草稿
-│           ├── llm_client.py    # OpenAI 兼容封装
-│           ├── demo.py          # Demo 模式全部实现
-│           └── paper_store.py   # 论文注册表
+│   ├── app/
+│   │   ├── main.py                 # FastAPI 入口
+│   │   ├── api.py                  # 路由与中间件
+│   │   ├── config.py               # pydantic-settings 配置
+│   │   ├── models.py               # 请求/响应模型
+│   │   ├── db_models.py            # Paper / Note / CompareScore
+│   │   ├── database.py             # SQLAlchemy 引擎与会话
+│   │   ├── rate_limit.py           # IP 限流
+│   │   ├── context.py              # 用户 Key 的请求上下文
+│   │   └── services/
+│   │       ├── pdf_parser.py       # 字号启发式 PDF 解析
+│   │       ├── paper_store.py      # 论文注册表
+│   │       ├── research_flow.py    # 6 阶段 / 12 步研究流
+│   │       ├── research_viz.py     # 光谱/分叉/论证/时间线/成长/思路对比
+│   │       ├── comparison.py       # 多论文思路对比
+│   │       ├── overview_note.py    # 概述图生成与缓存
+│   │       ├── notes.py            # 笔记管理
+│   │       ├── note_pdf.py         # 笔记 PDF
+│   │       ├── llm_client.py       # OpenAI 兼容封装
+│   │       └── demo.py             # Demo 模板
+│   ├── requirements.txt
+│   └── .env.example
 ├── frontend/
-│   ├── Dockerfile
-│   ├── app.py                   # Streamlit 8 Tab
+│   ├── app.py                      # 单文件 Streamlit 应用（5 页）
 │   └── requirements.txt
-└── data/                        # 运行时生成（已 gitignore）
-    ├── papers/
-    ├── chroma/
-    └── litread.db
+├── docs/
+│   └── competitive-landscape.md    # 竞品与相关工作
+├── data/                           # 运行时生成（gitignore）
+├── start.bat
+├── start.sh
+├── DEPLOY.md
+└── README.md
 ```
 
 ---
 
-## 九、Demo 模式说明
+## 十二、数据与缓存
 
-**为什么需要**：黑客松现场网络不稳定，API 可能超时或余额不足；评审也需要立刻看到完整功能。
-
-**怎么工作**：`backend/.env` 中 `LLM_API_KEY` 为空，或首次调用失败时，自动切换到 Demo 路径。
-
-| 功能 | Demo 模式输出 |
-|------|---------------|
-| 速读卡片 | 从摘要中抽取首句/中句/末句，分别填充核心贡献、方法、结论 |
-| 问答 | 返回向量检索 top-k 真实片段 + 相关度 + 来源标注 |
-| 对比 | 关键词集合交集/差集计算共识与分歧 |
-| Related Work | 关键词匹配排序，生成关联清单 |
-| 笔记整理 | 关键词分类到「研究问题/方法/实验/结论」 |
-
-`GET /api/health` 会返回 `{"llm_ready": false, "demo_mode": true}`，前端顶部显示黄色提示条。
+| 路径 | 内容 | 说明 |
+|---|---|---|
+| `data/papers/` | 上传的 PDF 原文 | 本地存储；生成研究流时论文文本会发送到你配置的 LLM 端点 |
+| `data/litread.db` | 论文、笔记、成长记录 | SQLite，单文件 |
+| `data/research/{id}.json` | 研究流缓存 | `rf-4`；6 阶段 / 12 步 |
+| `data/research/{id}.viz.json` | 可视化缓存 | `vz-4`；独立于研究流，不互相失效 |
+| `data/overview/{id}.json` | 概述图结构化数据 | `on-1` |
+| `data/overview/{id}.png` | 概述图 PNG | 可下载 |
 
 ---
 
-## 十、已知限制与后续规划
+## 十三、Demo 模式与演示论文
 
-**当前限制**
-
-- PDF 解析基于字号启发式，扫描版（图片型）PDF 尚不支持 OCR
-- 关键词提取偶有把正文首句带入的情况
-- 默认 ONNX MiniLM 偏英文，中文语义效果弱于 BGE
-- 暂无用户体系，多人共用同一实例会共享文献库
-
-**规划**
-
-- [ ] 接入 PaddleOCR / Marker 支持扫描版与公式图表理解
-- [ ] 支持 Zotero / arXiv / Semantic Scholar 直接导入
-- [ ] 增加多用户隔离与分享链接
-- [ ] 引入文献引用网络（而非仅语义相似度）构建图谱
-- [ ] 支持综述长文自动生成（多段 Related Work）
+- **无 Key 时**：在线演示的 3 篇预置论文已有完整研究流与可视化缓存，可以直接体验；上传新论文并生成深度研究流需要配置 LLM Key。
+- **有 Key 时**：在侧栏粘贴自己的 Key，验证后即可生成新论文的研究流；Key 只在当前会话内存中使用，刷新即清空。
+- **演示脚本**：[LitRead-Viz-Demo-Script.md](LitRead-Viz-Demo-Script.md)，覆盖「选论文 → 光谱 → 现场写推演 → 揭晓 → 分叉图 → 论证图 → 成长曲线 → 思路对比」。
 
 ---
 
-## 十一、License
+## 十四、已知限制
 
-MIT License — 可自由用于学习、科研与商业项目，请保留版权声明。
+- PDF 解析基于字号/坐标/关键词启发式，扫描版（图片型）PDF 暂不支持 OCR。
+- 作者路径是 **AI 重建**，不是作者本人的真实心理过程；页面会明确标注，并保留作者原文、证据和备选路线供用户判断。
+- 成长曲线的「接近度」是确定性文字重合指标，不是质量评分，也不应该用于评价研究者水平。
+- 思路对比要求论文已经生成研究流；未生成的论文会提示先完成 12 步，不会退回摘要相似度。
+- 当前没有用户体系；多人共用同一实例会共享论文库和笔记。
+- 生成研究流时，论文文本会发送到你配置的 LLM 端点；对隐私敏感的场景请使用本地或可信模型。
+- 主要面向 ML/CS 论文；其他领域的术语和实验范式可能需要调整。
 
 ---
+
+## 十五、Roadmap
+
+- [ ] 扫描版 PDF / 公式 / 图表的 OCR 与结构化理解
+- [ ] Zotero / arXiv / Semantic Scholar 直接导入
+- [ ] 多用户隔离、分享链接与团队文献架
+- [ ] 更细的研究思维评估：不只接近度，还能看到「起点/跳跃/取舍」的进步
+- [ ] 英文界面与英文研究流
+
+---
+
+## 十六、License 与致谢
+
+MIT License。
+
+演示论文：
+
+- *Attention Is All You Need*（Vaswani et al., 2017）
+- *Mastering the Game of Go with Self-play Experience Replay*
+- *Beyond Visual Evidence: Revealing and Mitigating Relational Privacy Leakage in Document MLLMs*
+
+竞品与相关工作调研：[docs/competitive-landscape.md](docs/competitive-landscape.md)
 
 <p align="center">
   <sub>Built for AI for Learning & Research · Hackathon 2026</sub>

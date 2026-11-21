@@ -176,43 +176,6 @@ def demo_organize(paper_title: Optional[str], raw_notes: List[str]) -> dict:
     }
 
 
-# ---------- BibTeX ----------
-
-def make_bibtex(meta: dict) -> str:
-    """根据论文元数据生成 BibTeX（无 LLM 也能跑）。"""
-    title = (meta.get("title") or "").strip() or "Untitled"
-    year = (meta.get("year") or "").strip() or "n.d."
-    authors_raw = (meta.get("authors") or "").strip()
-    if authors_raw:
-        # 统一作者分隔符
-        authors_raw = authors_raw.replace(", and ", " and ").replace(" and ", " and ")
-        authors = authors_raw.replace(", ", " and ")
-    else:
-        authors = "Unknown"
-
-    tag = _cite_key(authors, year, title)
-
-    return (
-        "@article{" + tag + ",\n"
-        f"  title     = {{{title}}},\n"
-        f"  author    = {{{authors}}},\n"
-        f"  year      = {{{year}}},\n"
-        "  journal   = {Preprint or Unknown},\n"
-        "}\n"
-    )
-
-
-def _cite_key(authors: str, year: str, title: str) -> str:
-    """生成形如 zhang2024scirag 的引用键。"""
-    first = authors.split(" and ")[0].split(",")[0].strip()
-    surname = re.sub(r"[^A-Za-z]", "", first.split()[-1]).lower() if first else ""
-    y = re.sub(r"\D", "", year) or "nd"
-    stop = {"a", "an", "the", "on", "of", "for", "with", "and", "to", "in", "via", "towards"}
-    words = [w for w in re.findall(r"[A-Za-z]+", title) if w.lower() not in stop]
-    head = (words[0].lower() if words else "paper")[:12]
-    return f"{surname or 'anon'}{y}{head}"
-
-
 # ---------- Related Work ----------
 
 def demo_related_work(your_topic: str, papers: List[dict]) -> dict:
