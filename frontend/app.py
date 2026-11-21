@@ -1179,70 +1179,108 @@ def _vz_head(kicker, title, concl):
     )
 
 
-_KIND_LABEL = {"paper": "论文事实", "external": "外部背景",
-               "inference": "模型推演", "mixed": "事实 + 推演", "missing": "未生成"}
+_KIND_LABEL = {"paper": "论文事实", "external": "背景 / 外部",
+               "inference": "AI 推断", "mixed": "事实 + 推断", "missing": "未生成"}
 _KIND_COLOR = {"paper": "#31543F", "external": "#B9B4A6",
                "inference": "#7A9C87", "mixed": "url(#vzHatch)", "missing": "#EFECE3"}
 
 
 def viz_basis_spectrum(basis):
-    """P0-1 可信度光谱。入参：viz['basis']（纯 dict）。"""
+    """P0-1 研究流构成（可信度光谱）。入参：viz['basis']（纯 dict）。"""
     basis = basis or {}
     steps = basis.get("steps") or []
     counts = basis.get("counts") or {}
     shares = basis.get("shares") or {}
     gen = int(basis.get("generated") or 0)
     if not steps or gen <= 0:
-        st.caption("研究流尚未生成，暂时没有可信度光谱。")
+        st.caption("研究流尚未生成，暂时没有研究流构成。")
         return
 
     order = [k for k in ("paper", "external", "inference", "mixed")]
     if counts.get("missing"):
         order.append("missing")
-    legend = "".join(
-        f'<span class="bs-lg"><i class="bs-dot b-{k}"></i>{_KIND_LABEL[k]} '
-        f'<b>{counts.get(k, 0)}</b> 步 · {shares.get(k, 0)}%</span>'
-        for k in order
-    )
+    total = sum(int(counts.get(k, 0)) for k in order) or 12
+
     segs, x = [], 0.0
     for k in order:
         width = 1000.0 * shares.get(k, 0) / 100.0
         if width <= 0:
             continue
         fill = _KIND_COLOR[k]
-        segs.append(f'<rect x="{x:.2f}" y="10" width="{width:.2f}" height="32" fill="{fill}" '
+        segs.append(f'<rect x="{x:.2f}" y="0" width="{width:.2f}" height="34" fill="{fill}" '
                     f'stroke="#F7F5F0" stroke-width="1"></rect>')
-        if width >= 52:
+        if width >= 64:
             color = "#FFFFFF" if k in ("paper", "inference") else "#20201C"
-            segs.append(f'<text x="{x + width / 2:.2f}" y="31" text-anchor="middle" '
+            segs.append(f'<text x="{x + width / 2:.2f}" y="22" text-anchor="middle" '
                         f'font-size="12" font-family="var(--mono)" fill="{color}">'
                         f'{shares.get(k, 0)}%</text>')
         x += width
+
+    cards = "".join(
+        f'<div class="bs-card"><div class="bs-card-top"><i class="bs-dot b-{k}"></i>'
+        f'<span>{_KIND_LABEL[k]}</span></div>'
+        f'<div class="bs-card-pct">{shares.get(k, 0)}%</div>'
+        f'<div class="bs-card-meta">{counts.get(k, 0)} / {total} 步</div></div>'
+        for k in order
+    )
     strip = "".join(
         f'<span class="bs-step b-{s.get("kind") or "missing"}" title="第 {s.get("index")} 步 · '
         f'{_KIND_LABEL.get(s.get("kind"), "未生成")}">{int(s.get("index")):02d}</span>'
         for s in steps
     )
+    parts = [
+        f'{shares.get("paper", 0)}% 是论文事实',
+        f'{shares.get("external", 0)}% 是背景/外部知识',
+        f'{shares.get("inference", 0)}% 是 AI 推断',
+    ]
+    if shares.get("mixed"):
+        parts.append(f'{shares.get("mixed", 0)}% 是事实与推断混用')
+    if shares.get("missing"):
+        parts.append(f'{shares.get("missing", 0)}% 尚未生成')
+    concl = "；".join(parts) + "。这不是论文质量评分，而是这条研究流的信息来源构成。"
+
     body = f"""
 <div class="bs">
-  <svg viewBox="0 0 1000 54" width="100%" role="img" aria-label="可信度光谱：{_vz_esc('；'.join(f'{_KIND_LABEL[k]} {shares.get(k,0)}%' for k in order))}">
-    <defs><pattern id="vzHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <rect width="6" height="6" fill="#DDD9CD"></rect><rect width="3" height="6" fill="#31543F"></rect>
-    </pattern></defs>
-    <rect x="0" y="10" width="1000" height="32" fill="#EFECE3"></rect>
-    {''.join(segs)}
-  </svg>
-  <div class="bs-lg-wrap">{legend}</div>
+  <div class="bs-top">
+    <div class="bs-title">这篇论文的研究流由什么组成？</div>
+    <div class="bs-sub">按 12 步的依据来源统计 · 不是质量评分</div>
+  </div>
+  <div class="bs-bar">
+    <svg viewBox="0 0 1000 34" width="100%" role="img"
+         aria-label="研究流构成：{_vz_esc('；'.join(f'{_KIND_LABEL[k]} {shares.get(k,0)}%' for k in order))}">
+      <defs><pattern id="vzHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="6" height="6" fill="#DDD9CD"></rect><rect width="3" height="6" fill="#31543F"></rect>
+      </pattern></defs>
+      <rect x="0" y="0" width="1000" height="34" fill="#EFECE3"></rect>
+      {''.join(segs)}
+    </svg>
+  </div>
+  <div class="bs-legend">{cards}</div>
+  <div class="bs-concl">{concl}</div>
+  <div class="bs-strip-label">逐步骤依据</div>
   <div class="bs-strip">{strip}</div>
 </div>"""
     extra = """
 <style>
-.bs-lg-wrap{display:flex;flex-wrap:wrap;gap:5px 15px;margin-top:8px;font-family:var(--sans);
-  font-size:11.5px;color:var(--ink2);}
-.bs-lg{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
-.bs-dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
+.bs-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:7px;}
+.bs-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);}
+.bs-sub{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--ink3);text-align:right;}
+.bs-bar{border-radius:4px;overflow:hidden;}
+.bs-bar svg{display:block;}
+.bs-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin-top:10px;}
+.bs-card{border:1px solid var(--rule);background:#fff;border-radius:5px;padding:8px 10px;min-width:0;}
+.bs-card-top{display:flex;align-items:center;gap:6px;font-family:var(--sans);font-size:11px;
+  color:var(--ink2);}
+.bs-card-pct{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--ink);
+  line-height:1.2;margin-top:4px;}
+.bs-card-meta{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-top:2px;}
+.bs-dot{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto;}
 .bs-dot.b-mixed{background:repeating-linear-gradient(135deg,#31543F 0 2px,#DDD9CD 2px 4px);}
-.bs-strip{display:flex;gap:4px;margin-top:9px;flex-wrap:wrap;}
+.bs-concl{margin-top:10px;padding:8px 10px;background:#F3F0E7;border-left:2px solid var(--accent);
+  font-family:var(--sans);font-size:11.5px;line-height:1.65;color:var(--ink2);}
+.bs-strip-label{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink3);
+  margin-top:11px;text-transform:uppercase;}
+.bs-strip{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
 .bs-step{font-family:var(--mono);font-size:9.5px;color:var(--ink3);border:1px solid var(--rule);
   border-radius:2px;padding:1px 5px;background:#fff;}
 .bs-step.b-paper{border-color:#31543F;color:#31543F;}
@@ -1250,12 +1288,17 @@ def viz_basis_spectrum(basis):
 .bs-step.b-external{border-color:#B9B4A6;}
 .bs-step.b-mixed{background:repeating-linear-gradient(135deg,#E9EFE9 0 2px,#fff 2px 4px);}
 .bs-step.b-missing{color:#8B877C;background:#F7F5F0;}
+@media(max-width:700px){
+  .bs-top{flex-direction:column;align-items:flex-start;gap:2px;}
+  .bs-sub{text-align:left;}
+  .bs-legend{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
 </style>"""
     _vz_head(
-        "BASIS SPECTRUM",
-        "可信度光谱",
-        f"12 步中已生成 <b>{gen}</b> 步：论文事实与推演的比例一眼可见。"
-        f"墨绿越深，结论越贴近论文原文；斜纹表示事实与推演混用。",
+        "EVIDENCE COMPOSITION",
+        "研究流构成",
+        f"12 步中已生成 <b>{gen}</b> 步。一条完整色带显示论文事实、背景/外部、"
+        f"AI 推断和混合各占多少；颜色只表示信息来源，不是论文质量评分。",
     )
     _vz_static(body + extra)
 
@@ -2165,96 +2208,106 @@ def viz_timeline(viz):
 
     if items:
         concl = (f"world_before 共 <b>{len(items) + len(undated)}</b> 条："
-                 f"<b>{len(items)}</b> 条能从原文追溯到年份，按时间排到本文；"
-                 f"其余 <b>{len(undated)}</b> 条进入左侧背景常识组。")
+                 f"<b>{len(items)}</b> 条有可追溯年份，按时间排到本文；"
+                 f"<b>{len(undated)}</b> 条没有年份，放在下方背景常识，不推测年代。")
     else:
         concl = (f"world_before 共 <b>{len(undated)}</b> 条，但都没有可追溯的年份；"
-                 "它们全部进入背景常识组，时间轴只保留本文节点。不推测年代。")
+                 "它们放在下方背景常识，时间轴只保留本文节点。不推测年代。")
     _vz_head("PRE-HISTORY TIMELINE · STEP 01", "前史时间线", concl)
 
-    shown = items[:8]
-    hidden = max(0, len(items) - len(shown))
     paper_year = paper.get("year")
     paper_label = f"本文 · {paper_year}" if paper_year else "本文 · 年份未识别"
 
-    nodes = "".join(
-        f'<div class="tl-item"><div class="tl-year">{int(x.get("year"))}</div>'
-        f'<div class="tl-dot"></div><div class="tl-fact">{_vz_esc(_vz_clip(x.get("fact"), 110))}</div>'
-        f'<div class="tl-src">{_vz_esc(_vz_clip(x.get("source"), 36))}</div></div>'
-        for x in shown
-    )
-    if not shown:
-        nodes = (
-            f'<div class="tl-item pre"><div class="tl-year">年代未标注</div>'
-            f'<div class="tl-dot"></div><div class="tl-fact">'
-            f'{len(undated)} 条背景常识 · 不推测年代</div>'
-            f'<div class="tl-src">见左侧与数据表</div></div>'
-        )
-    nodes += (f'<div class="tl-item paper"><div class="tl-year">{_vz_esc(paper_label)}</div>'
-              f'<div class="tl-dot"></div><div class="tl-fact">'
-              f'{_vz_esc(_vz_clip(paper.get("title") or "本文", 110))}</div>'
-              f'<div class="tl-src">论文元数据</div></div>')
-    track_cls = "tl-track single" if not shown else "tl-track"
+    def _year(value):
+        return str(value) if value not in (None, "") else "—"
 
-    side = "".join(
-        f'<li><b>{_vz_esc(x.get("kind") or "背景")}</b><br>{_vz_esc(_vz_clip(x.get("fact"), 84))}</li>'
+    dated_nodes = "".join(
+        f'<div class="tl-item">'
+        f'<div class="tl-year">{_vz_esc(_year(x.get("year")))}</div>'
+        f'<div class="tl-rail"><span class="tl-dot"></span></div>'
+        f'<div class="tl-card"><div class="tl-fact">{_vz_esc(x.get("fact") or "")}</div>'
+        f'<div class="tl-src">{_vz_esc(x.get("source") or "")}</div></div></div>'
+        for x in items
+    )
+    if not items:
+        dated_nodes = (
+            '<div class="tl-item pre"><div class="tl-year">年代未标注</div>'
+            '<div class="tl-rail"><span class="tl-dot"></span></div>'
+            '<div class="tl-card"><div class="tl-fact">world_before 里的前史条目没有可追溯年份，'
+            '不推测年代；它们放在下方「背景常识」。</div></div></div>'
+        )
+    dated_nodes += (
+        f'<div class="tl-item paper"><div class="tl-year">{_vz_esc(paper_label)}</div>'
+        f'<div class="tl-rail"><span class="tl-dot"></span></div>'
+        f'<div class="tl-card"><div class="tl-fact">'
+        f'{_vz_esc(paper.get("title") or "本文")}</div>'
+        f'<div class="tl-src">论文元数据</div></div></div>'
+    )
+
+    bg_cards = "".join(
+        f'<div class="tl-bg"><div class="tl-bg-k">{_vz_esc(x.get("kind") or "背景")}</div>'
+        f'<div class="tl-bg-fact">{_vz_esc(x.get("fact") or "")}</div>'
+        f'<div class="tl-bg-src">{_vz_esc(x.get("source") or "")}</div></div>'
         for x in undated
-    ) or '<li class="none">没有无年份条目。</li>'
+    )
+    background = (
+        f'<div class="tl-bg-wrap"><div class="tl-bg-head">背景常识 · 无年份'
+        f'<span>{len(undated)} 条 · 不推测年代</span></div>'
+        f'<div class="tl-grid">{bg_cards}</div></div>'
+    ) if undated else ""
 
     body = r"""
 <style>
-.tl-wrap{display:grid;grid-template-columns:218px 1fr;gap:16px;align-items:start;}
-.tl-side{border:1px solid var(--rule);background:#F3F0E7;border-radius:6px;padding:9px 11px;}
-.tl-side-k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--accent2);
-  text-transform:uppercase;}
-.tl-side ul{margin:6px 0 0;padding-left:15px;font-family:var(--sans);font-size:10.5px;
-  line-height:1.55;color:var(--ink2);}
-.tl-side li{margin:0 0 6px;}
-.tl-side li b{color:var(--ink);font-weight:600;}
-.tl-side li.none{list-style:none;margin-left:-15px;color:var(--ink3);}
-.tl-main{min-width:0;overflow:hidden;}
-.tl-track{display:flex;position:relative;padding:4px 0 0;}
-.tl-track::before{content:"";position:absolute;left:0;right:0;top:31px;height:1px;
+.tl-wrap{min-width:0;}
+.tl-track{position:relative;margin-top:2px;}
+.tl-track::before{content:"";position:absolute;left:86px;top:10px;bottom:10px;width:1px;
   background:var(--rule2);}
-.tl-item{flex:1 1 0;min-width:0;padding:0 6px 0 0;position:relative;}
-.tl-year{height:22px;font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--ink2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tl-item{display:grid;grid-template-columns:76px 20px minmax(0,1fr);gap:8px;padding:6px 0;}
+.tl-year{text-align:right;font-family:var(--mono);font-size:10px;line-height:1.45;
+  color:var(--ink2);padding-top:4px;overflow-wrap:anywhere;}
+.tl-rail{position:relative;display:flex;justify-content:center;padding-top:7px;}
 .tl-dot{width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid var(--accent);
-  margin:5px 0 7px;}
-.tl-fact{font-family:var(--sans);font-size:10.2px;line-height:1.48;color:var(--ink2);}
-.tl-src{font-family:var(--mono);font-size:8.5px;line-height:1.4;color:var(--ink3);margin-top:3px;}
+  position:relative;z-index:1;}
+.tl-card{border:1px solid var(--rule);background:#fff;border-radius:6px;padding:8px 10px;
+  min-width:0;}
+.tl-fact{font-family:var(--sans);font-size:11.5px;line-height:1.65;color:var(--ink2);
+  overflow-wrap:anywhere;}
+.tl-src{font-family:var(--mono);font-size:9px;line-height:1.4;color:var(--ink3);margin-top:4px;}
 .tl-item.paper .tl-dot{background:var(--accent);}
-.tl-item.paper .tl-year{color:var(--accent);}
+.tl-item.paper .tl-year{color:var(--accent);font-weight:600;}
+.tl-item.paper .tl-card{background:var(--accent-wash);border-color:rgba(49,84,63,.25);}
 .tl-item.paper .tl-fact{color:var(--ink);font-weight:600;}
-.tl-item.pre .tl-dot{border-color:#8B877C;background:#F7F5F0;border-style:dashed;}
+.tl-item.pre .tl-dot{border-color:#8B877C;border-style:dashed;background:#F7F5F0;}
 .tl-item.pre .tl-year{color:var(--ink3);}
-.tl-track.single .tl-item.pre{flex:1 1 auto;}
-.tl-track.single .tl-item.paper{flex:0 0 230px;margin-left:auto;}
-.tl-more{font-family:var(--sans);font-size:10.5px;color:var(--ink3);margin-top:7px;}
-@media (max-width:860px){
-  .tl-wrap{grid-template-columns:1fr;}
-  .tl-track{flex-direction:column;padding:2px 0 0;}
-  .tl-track::before{left:60px;top:0;bottom:0;width:1px;height:auto;right:auto;}
-  .tl-item{display:grid;grid-template-columns:52px 14px 1fr;gap:5px;padding:4px 0;}
-  .tl-year{height:auto;text-align:right;font-size:10px;padding-top:2px;}
-  .tl-dot{margin:5px 2px 0;}
-  .tl-src{display:none;}
-  .tl-fact{font-size:10.8px;}
-  .tl-item.paper .tl-fact{font-weight:700;}
-  .tl-track.single .tl-item.paper{flex:1 1 auto;margin-left:0;}
+.tl-bg-wrap{margin-top:14px;border-top:1px solid var(--rule);padding-top:12px;}
+.tl-bg-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--accent2);
+  text-transform:uppercase;}
+.tl-bg-head span{font-family:var(--sans);font-size:10px;letter-spacing:0;color:var(--ink3);
+  text-transform:none;}
+.tl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;
+  margin-top:8px;}
+.tl-bg{background:#F3F0E7;border:1px solid var(--rule);border-radius:5px;padding:8px 10px;
+  min-width:0;}
+.tl-bg-k{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;color:var(--ink3);
+  text-transform:uppercase;margin-bottom:3px;}
+.tl-bg-fact{font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--ink2);
+  overflow-wrap:anywhere;}
+.tl-bg-src{font-family:var(--mono);font-size:8.5px;color:var(--ink3);margin-top:3px;}
+@media(max-width:700px){
+  .tl-track::before{left:64px;}
+  .tl-item{grid-template-columns:56px 16px minmax(0,1fr);gap:6px;}
+  .tl-year{font-size:9px;}
+  .tl-bg-head{flex-direction:column;gap:2px;}
+  .tl-grid{grid-template-columns:1fr;}
 }
 </style>
 <div class="tl-wrap">
-  <div class="tl-side"><div class="tl-side-k">背景常识 · 无年份</div><ul>__SIDE__</ul></div>
-  <div class="tl-main"><div class="__TRACK_CLASS__">__NODES__</div>
-    __MORE__
-  </div>
+  <div class="tl-track">__NODES__</div>
+  __BACKGROUND__
 </div>
 """
-    more = (f'<div class="tl-more">另有 {hidden} 条带年份的条目，完整内容见下方数据表。</div>'
-            if hidden else "")
-    body = (body.replace("__SIDE__", side).replace("__NODES__", nodes)
-            .replace("__MORE__", more).replace("__TRACK_CLASS__", track_cls))
+    body = body.replace("__NODES__", dated_nodes).replace("__BACKGROUND__", background)
     _vz_static(body)
 
     dated_rows = [[str(x.get("year")), x.get("kind") or "", x.get("fact") or "",
