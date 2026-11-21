@@ -2656,6 +2656,20 @@ with st.sidebar:
     st.caption(t("nav_line"))
 
     st.markdown(
+        '<div style="margin-top:16px; padding:10px 11px; background:#F3F0E7; '
+        'border:1px solid var(--lr-rule); border-left:2px solid var(--lr-accent-2); '
+        'border-radius:4px;">'
+        '<div style="font-family:var(--lr-mono); font-size:8.5px; letter-spacing:.08em; '
+        'color:var(--lr-ink-4); text-transform:uppercase;">Reviewer view · 开发中</div>'
+        '<div style="font-family:var(--lr-sans); font-size:.72rem; line-height:1.65; '
+        'color:var(--lr-ink-2); margin-top:4px;">'
+        '同一套 12 步也适用于审稿：判断这篇论文的主张是否成立、证据是否足够、值不值得入选。'
+        '后续会在这里增加切换按钮：<b>学习论文思路</b> / <b>评审视角</b>。'
+        '</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
         '<div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--lr-rule);">'
         '<a href="/" target="_top" style="font-family:var(--lr-sans); font-size:.755rem; '
         'color:var(--lr-ink-3) !important; text-decoration:none; '
@@ -2782,6 +2796,17 @@ def main():
             "RESEARCH WORKFLOW",
             "12 步研究工作流",
             "先建立背景，再只凭方法出现前的知识推演作者的思路；然后读懂方法、审视证据、红队攻击，最后提出自己的 follow-up。",
+        )
+        st.markdown(
+            '<div style="margin:0 0 14px; padding:9px 12px; background:#F3F0E7; '
+            'border:1px solid var(--lr-rule); border-left:2px solid var(--lr-accent-2); '
+            'border-radius:4px; font-family:var(--lr-sans); font-size:.755rem; '
+            'line-height:1.7; color:var(--lr-ink-2);">'
+            '<b>这套流程也适用于审稿。</b>阶段四的实验证据、阶段五的红队与反例、'
+            '阶段六的 follow-up，正好对应评审要回答的三个问题：主张成立吗？证据够吗？值不值得入选？'
+            '评审视角的切换按钮将放在左侧导航，目前开发中。'
+            '</div>',
+            unsafe_allow_html=True,
         )
         papers = fetch_papers()
         if not papers:
