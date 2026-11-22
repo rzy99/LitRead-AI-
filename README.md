@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/logo.png" alt="LitRead" width="380"></p>
+
 # LitRead · AI 研究思维训练
 
 > 不是替你读论文，而是训练你像作者一样想。

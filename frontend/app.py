@@ -5,6 +5,7 @@ LitRead · 学术工作台（Design v2 · Editorial Academic）
 功能：解析 / 研究流 / 对比 / 概述图 / 笔记
       + 用户自配 Key（不落盘）+ IP 限流 + Demo 模式
 """
+import base64
 import html as html_lib
 import json
 import os
@@ -17,7 +18,22 @@ import streamlit.components.v1 as components
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-# ── 品牌 SVG（favicon 单字母标） ──
+# ── 品牌资源 ──
+_ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+
+
+def _asset_uri(name):
+    try:
+        with open(os.path.join(_ASSET_DIR, name), "rb") as f:
+            return "data:image/png;base64," + base64.b64encode(f.read()).decode()
+    except OSError:
+        return ""
+
+
+LOGO_URI = _asset_uri("logo.png")
+LOGO_MARK = os.path.join(_ASSET_DIR, "logo-mark.png")
+
+# ── 品牌 SVG（favicon 兜底） ──
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
     "%3Crect width='32' height='32' rx='7' fill='%2320201C'/%3E"
@@ -26,7 +42,7 @@ FAVICON = (
 
 st.set_page_config(
     page_title="LitRead · AI 研究思维训练",
-    page_icon=FAVICON,
+    page_icon=LOGO_MARK if os.path.exists(LOGO_MARK) else FAVICON,
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -238,6 +254,7 @@ h3{ font-size:1.18rem !important; font-weight:600; color:var(--lr-ink-2); }
   font-family:var(--lr-serif); font-size:3.15rem; font-weight:700;
   letter-spacing:-.015em; color:var(--lr-ink); line-height:1.12; margin:14px 0 0;
 }
+.lr-logo{ display:block; width:min(300px,64vw); height:auto; margin:16px 0 0; }
 .lr-sub{
   font-family:var(--lr-sans); font-size:1.02rem; color:var(--lr-ink-2);
   margin-top:14px; line-height:1.8; max-width:640px;
@@ -2684,10 +2701,12 @@ def main():
     demo = is_demo_mode()
 
     # Hero
+    logo_html = (f'<img class="lr-logo" src="{LOGO_URI}" alt="LitRead">'
+                 if LOGO_URI else '<div class="lr-title">LitRead</div>')
     st.markdown(
         f"""<div class="lr-hero lr-anim">
         <div class="lr-eyebrow">AI Reading Workbench</div>
-        <div class="lr-title">LitRead</div>
+        {logo_html}
         <div class="lr-sub">{t('hero_sub')}</div>
     </div>""",
         unsafe_allow_html=True,
