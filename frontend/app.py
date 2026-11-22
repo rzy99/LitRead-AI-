@@ -31,6 +31,7 @@ def _asset_uri(name):
 
 
 LOGO_URI = _asset_uri("logo.png")
+LOGO_MARK_URI = _asset_uri("logo-mark.png")
 LOGO_MARK = os.path.join(_ASSET_DIR, "logo-mark.png")
 
 # ── 品牌 SVG（favicon 兜底） ──
@@ -2358,6 +2359,7 @@ LANDING_CSS = """
   display:flex; align-items:center; gap:9px;
   font-family:var(--lr-serif); font-size:1.16rem; font-weight:700; color:var(--lr-ink);
 }
+.lp-logo img{ height:36px; width:auto; display:block; }
 .lp-logo .lr-i{ color:var(--lr-accent); }
 .lp-top-r{
   font-family:var(--lr-sans); font-size:.7rem; font-weight:600;
@@ -2540,7 +2542,7 @@ def render_landing():
     st.markdown(
         '<div class="lp">'
         '<div class="lp-top">'
-        f'<div class="lp-logo">{icon("book", 21, 1.7)}<span>LitRead</span></div>'
+        f'<div class="lp-logo"><img src="{LOGO_URI}" alt="LitRead"></div>'
         '<div class="lp-top-r">AI 研究思维训练工作台 · Hackathon 2026</div>'
         '</div>'
 
@@ -2601,9 +2603,11 @@ if "_viz_session" not in st.session_state:
 
 # ── 侧栏 ──
 with st.sidebar:
+    _brand_mark = (f'<img src="{LOGO_MARK_URI}" width="30" height="30" alt="" '
+                   'style="display:block;flex:0 0 auto;">' if LOGO_MARK_URI else icon('book', 27, 1.6))
     st.markdown(
         f"""<div class="lr-brand">
-        {icon('book', 27, 1.6)}
+        {_brand_mark}
         <div>
             <div class="lr-brand-name">LitRead</div>
             <div class="lr-brand-sub">{t('tagline')}</div>
